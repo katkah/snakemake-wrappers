@@ -1,0 +1,29 @@
+rule nanoplot_fastq:
+    input:
+        fastq="reads.fq.gz",
+    output:
+        directory("qc/a"),
+    log:
+        "logs/a.log",
+    threads: 4
+    params:
+        extra="",  # optional parameters for NanoPlot (except --threads/--outdir/input)
+    wrapper:
+        "master/bio/nanoplot"
+
+
+# Alignment input, which produces plots that read input does not: percent
+# identity, mapping quality, and aligned versus sequenced read length.
+rule nanoplot_bam:
+    input:
+        bam="mapped/a.bam",
+        bai="mapped/a.bam.bai",
+    output:
+        directory("qc/b"),
+    log:
+        "logs/b.log",
+    threads: 4
+    params:
+        extra="--no-N50",
+    wrapper:
+        "master/bio/nanoplot"

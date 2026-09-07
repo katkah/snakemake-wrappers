@@ -1,0 +1,48 @@
+name: nanoplot
+description: Plot quality metrics for long reads or their alignments with NanoPlot.
+url: https://github.com/wdecoster/NanoPlot
+authors:
+  - Kateřina Havlová
+input:
+  - fastq: long-read FASTQ (one file or several)
+  - fastq_rich: FASTQ with rich header information from albacore, MinKNOW or guppy
+  - fastq_minimal: FASTQ where only the timestamp is parsed, for speed
+  - fasta: long-read FASTA
+  - bam: aligned, sorted and indexed BAM
+  - ubam: unaligned BAM
+  - cram: aligned, sorted and indexed CRAM
+  - summary: sequencing_summary.txt from the basecaller
+  - pickle: data stored by an earlier NanoPlot run with `--store` (a single file)
+  - feather: data in feather format
+output:
+  - a `directory()` holding everything NanoPlot writes: NanoPlot-report.html, NanoStats.txt, and one HTML plus one image per plot
+params:
+  - extra: additional arguments (e.g. `--minlength`, `--maxlength`, `--no-N50`, `--format svg`, `--tsv_stats`); `--threads`, `--outdir` and the input option are set by the wrapper.
+notes: |
+  Exactly one input type must be given: NanoPlot's input options are a
+  required, mutually exclusive group. The wrapper checks this itself so the
+  error names the input keys, rather than surfacing an argparse failure from
+  inside a wrapper. Each option accepts several files.
+
+  The output is a directory because the file set depends on the input: read
+  input produces 7 plots, alignment input adds 11 more covering percent
+  identity, mapping quality and aligned versus sequenced length. Declaring the
+  directory keeps all of it, survives `shadow:` and execution without a shared
+  filesystem, and lets Snakemake clear stale files before a rerun.
+
+  The report embeds its figure data but loads plotly.js from a CDN, so it needs
+  network access to draw the plots — layout and statistics render offline, the
+  figures do not. The per-plot images are therefore the only offline view, and
+  are worth keeping for that reason.
+
+  Static image export needs Kaleido and a browser. On a headless machine the
+  HTML figures may be written without their image counterparts; the report is
+  unaffected.
+
+  `--tsv_stats` changes the contents of NanoStats.txt to TSV but not its
+  extension. Filtering options additionally produce
+  `NanoStats_post_filtering.txt` alongside the unfiltered one.
+
+  A BAM index is not required — nanoget builds one if it is missing — but
+  declaring it as an input is worth doing so the index comes from a rule that
+  owns it rather than appearing as an untracked side effect.

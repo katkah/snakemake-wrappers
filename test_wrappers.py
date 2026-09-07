@@ -5540,3 +5540,15 @@ def test_nanovar(run):
         ],
         cores=4,
     )
+
+
+def test_nanoplot(run):
+    run(
+        "bio/nanoplot",
+        [
+            "snakemake",
+            "qc/a",
+            "qc/b",
+        ],
+        cores=4,
+    )
